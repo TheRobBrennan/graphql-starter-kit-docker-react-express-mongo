@@ -1,4 +1,5 @@
 const express = require('express')
+const checkEnv = require('check-env')
 const { createServer } = require('http')
 const { ApolloServer, PubSub } = require('apollo-server-express')
 const { MongoClient } = require('mongodb')
@@ -10,21 +11,16 @@ const depthLimit = require('graphql-depth-limit')
 const { createComplexityLimitRule } = require('graphql-validation-complexity')
 
 require('dotenv').config()
+// Throw an error if we don't have a required environment variable
+checkEnv(['MONGO_URI'])
 var typeDefs = readFileSync('./typeDefs.graphql', 'UTF-8')
 
 async function start() {
   const app = express()
   const MONGO_URI = process.env.MONGO_URI
   const pubsub = new PubSub()
-  let db
-
-  try {
-    const client = await MongoClient.connect(MONGO_URI, { useNewUrlParser: true })
-    db = client.db()
-  } catch (error) {
-    console.log(`MongoDB host not found; please add MONGO_URI environment variable`)
-    process.exit(1)
-  }
+  const client = await MongoClient.connect(MONGO_URI, { useNewUrlParser: true })
+  const db = client.db()
   
   const server = new ApolloServer({
     typeDefs,

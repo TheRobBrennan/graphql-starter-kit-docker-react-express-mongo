@@ -1,0 +1,15 @@
+# Modules should be installed on Docker containers.
+# Ignore root folder package-lock.json and node_modules
+node_modules
+package-lock.json
+
+# App
+app/.env
+app/node_modules
+app/package-lock.json
+
+# Server
+server/.docker
+server/.env
+server/node_modules
+server/package-lock.json

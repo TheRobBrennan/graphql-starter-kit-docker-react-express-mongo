@@ -1,0 +1,35 @@
+scalar DateTime
+
+"""
+A User of our system
+"""
+type User {
+    githubLogin: ID!
+    name: String
+    avatar: String
+}
+
+type Query {
+    """
+    Query to count the total number of users    
+    """
+    totalUsers: Int!
+
+    """
+    Query to return data for all users
+    """
+    allUsers: [User!]!
+
+    """
+    Query to return data for a specific user's login ID
+    """
+    User(login: ID!): User
+}
+
+type Mutation {
+    addFakeUsers(count: Int=1): [User!]!
+}
+
+type Subscription {
+    newUser: User!
+}

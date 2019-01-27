@@ -9,6 +9,7 @@ services:
     command: ./node_modules/.bin/react-scripts start
     ports:
       - "3000:3000"
+    # Automatically hot reload code changes in the Docker container
     volumes:
       - ./app:/usr/src
     depends_on:

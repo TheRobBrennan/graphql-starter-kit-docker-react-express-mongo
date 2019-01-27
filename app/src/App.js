@@ -1,28 +1,74 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component, Fragment } from 'react'
+import { BrowserRouter, Switch, Route } from 'react-router-dom'
+import { gql } from 'apollo-boost'
+import { withApollo } from 'react-apollo'
+
+import Users from './Users'
+
+export const ROOT_QUERY = gql`
+  query allUsers {
+    totalUsers
+    allUsers {
+      ...userInfo
+    }
+  }
+
+  fragment userInfo on User {
+    githubLogin
+    name
+    avatar
+  }
+`
+
+const LISTEN_FOR_USERS = gql`
+  subscription {
+    newUser {
+      githubLogin
+      name
+      avatar
+    }
+  }
+`
 
 class App extends Component {
+  componentDidMount() {
+    let { client } = this.props
+    this.listenForUsers = client
+      .subscribe({ query: LISTEN_FOR_USERS })
+      .subscribe(({ data: { newUser } }) => {
+        const data = client.readQuery({ query: ROOT_QUERY })
+        data.totalUsers += 1
+        data.allUsers = [...data.allUsers, newUser]
+        client.writeQuery({ query: ROOT_QUERY, data })
+      })
+  }
+
+  componentWillUnmount() {
+    this.listenForUsers.unsubscribe()
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
+      <BrowserRouter>
+        <Switch>
+          <Route
+            exact
+            path="/"
+            component={() => (
+              <Fragment>
+                <Users />
+              </Fragment>
+            )}
+          />
+          <Route
+            component={({ location }) => (
+              <h1>"{location.pathname}" not found</h1>
+            )}
+          />
+        </Switch>
+      </BrowserRouter>
+    )
   }
 }
 
-export default App;
+export default withApollo(App)
